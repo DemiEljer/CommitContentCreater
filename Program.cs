@@ -5,6 +5,8 @@ bool cleanFilesFlag = false;
 string projectDirrectory = ".\\";
 List<string> fileExtentions = new List<string>();
 
+Console.WriteLine("CommitContentCreater v 1.0.0");
+
 bool extentionReading = false;
 bool helpShow = false;
 for (int i = 0; i < args.Length; i++)
@@ -49,16 +51,19 @@ for (int i = 0; i < args.Length; i++)
 
 if (helpShow)
 {
-    Console.WriteLine("CommitContentCreater v 1.0.0");
+    Console.WriteLine("Описание аргументов");
     Console.WriteLine("-h               : Выводит справочную ифнормацию по утилите");
     Console.WriteLine("-c               : Флаг очистка проекта от строк с описанием коммита");
-    Console.WriteLine("-e <extention>   : Указание допустимое расширения файла для поиска коммита (-e h -e c)");
+    Console.WriteLine("-e <extention>   : Указание допустимое расширения файла для поиска описания коммита (-e h -e c)");
     Console.WriteLine("<Path>           : Путь к директории указывается просто как строка");
+
+    return;
 }
 
 List<string> resultLines = new List<string>();
 
 Version currentVersion = FileHandling.FindVersionInHistoryFile(projectDirrectory);
+Version prevVersion = currentVersion.Clone();
 
 try
 {
@@ -77,9 +82,9 @@ catch
     Console.WriteLine("! Ошибка доступа к директории проекта !");
 }
 
-if (currentVersion.HighNumber == 0 
+if (currentVersion.HighNumber == 0
     && currentVersion.MiddleNumber == 0
-    && currentVersion.LowNumber == 0 )
+    && currentVersion.LowNumber == 0)
 {
     currentVersion.MiddleNumber = 1;
 }
@@ -107,7 +112,7 @@ currentVersion += versionModifier;
 if (resultLines.Count != 0)
 {
     FileHandling.GenerateCommitFile(projectDirrectory, resultLines, currentVersion);
-    FileHandling.AppendHistoryFile(projectDirrectory, resultLines, currentVersion);
+    FileHandling.AppendHistoryFile(projectDirrectory, resultLines, currentVersion, currentVersion.Compare(prevVersion) != 0);
 }
 else
 {
@@ -315,7 +320,7 @@ public class FileHandling
         }
     }
 
-    public static void AppendHistoryFile(string path, List<string> lines, Version version)
+    public static void AppendHistoryFile(string path, List<string> lines, Version version, bool isNewVersion)
     {
         string pathToFile = path;
 
@@ -325,19 +330,53 @@ public class FileHandling
         }
         pathToFile += "history.txt";
 
-        using (StreamWriter sw = new StreamWriter(pathToFile, true))
+        List<string> historyFileContent = new List<string>();
+        try
         {
-            sw.WriteLine(version.ToString());
-            sw.WriteLine("");
+            using (StreamReader sr = new StreamReader(pathToFile))
+            {
+                while (!sr.EndOfStream)
+                {
+                    historyFileContent.Add(sr.ReadLine());
+                }
+            }
+        }
+        catch
+        {
+
+        }
+
+        if (historyFileContent.Count != 0
+            && isNewVersion)
+        {
+            historyFileContent.Add(version.ToString());
+            historyFileContent.Add($"[{DateTime.Now.ToString()}]");
+            historyFileContent.Add("");
 
             foreach (var line in lines)
             {
-                sw.WriteLine(line);
+                historyFileContent.Add(line);
             }
 
-            sw.WriteLine();
-            sw.WriteLine("----------------------------------------------------------------------------------------------");
-            sw.WriteLine();
+            historyFileContent.Add("");
+            historyFileContent.Add("----------------------------------------------------------------------------------------------");
+            historyFileContent.Add("");
+        }
+        else
+        {
+            historyFileContent.Insert(historyFileContent.Count - 3, $"[{DateTime.Now.ToString()}]");
+            foreach (var line in lines)
+            {
+                historyFileContent.Insert(historyFileContent.Count - 3, line);
+            }
+        }
+
+        using (StreamWriter sw = new StreamWriter(pathToFile))
+        {
+            foreach (var line in historyFileContent)
+            {
+                sw.WriteLine(line);
+            }
         }
 
         Console.WriteLine($"Был дополнен файл истории коммитов по пути: {pathToFile}");
@@ -370,10 +409,10 @@ public class Version
     public int HighNumber { get; set; } = 0;
 
     public int MiddleNumber { get; set; } = 0;
-    
+
     public int LowNumber { get; set; } = 0;
 
-    public static Version operator+(Version origin, Version adding)
+    public static Version operator +(Version origin, Version adding)
     {
         if (adding.HighNumber > 0)
         {
@@ -392,6 +431,23 @@ public class Version
         }
 
         return origin;
+    }
+
+    public int Compare(Version another)
+    {
+        var diff = HighNumber - another.HighNumber;
+        if (diff != 0)
+        {
+            return diff;
+        }
+
+        diff = MiddleNumber - another.MiddleNumber;
+        if (diff != 0)
+        {
+            return diff;
+        }
+
+        return LowNumber - another.LowNumber;
     }
 
     public override string ToString()
@@ -451,5 +507,14 @@ public class Version
         }
     }
 
+    public Version Clone()
+    {
+        return new Version()
+        {
+            HighNumber = HighNumber,
+            MiddleNumber = MiddleNumber,
+            LowNumber = LowNumber
+        };
+    }
 }
 
