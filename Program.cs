@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
-bool cleanFilesFlag = true;
-string projectDirrectory = "./";
+bool cleanFilesFlag = false;
+string projectDirrectory = ".\\";
 List<string> fileExtentions = new List<string>();
 
 bool extentionReading = false;
@@ -57,6 +58,8 @@ if (helpShow)
 
 List<string> resultLines = new List<string>();
 
+Version currentVersion = FileHandling.FindVersionInHistoryFile(projectDirrectory);
+
 try
 {
     foreach (var filePath in Directory.GetFiles(projectDirrectory, "*.*", SearchOption.AllDirectories))
@@ -74,7 +77,42 @@ catch
     Console.WriteLine("! Ошибка доступа к директории проекта !");
 }
 
-FileHandling.GenerateCommitFile(projectDirrectory, resultLines);
+if (currentVersion.HighNumber == 0 
+    && currentVersion.MiddleNumber == 0
+    && currentVersion.LowNumber == 0 )
+{
+    currentVersion.MiddleNumber = 1;
+}
+
+// Поиск модификатора версии в файлах
+Version versionModifier = new Version() { LowNumber = 1 };
+for (int i = 0; i < resultLines.Count;)
+{
+    var _versionModifier = Version.ParseFromString(resultLines[i]);
+
+    if (_versionModifier != null)
+    {
+        versionModifier = _versionModifier;
+        resultLines.RemoveAt(i);
+    }
+    else
+    {
+        i++;
+    }
+}
+
+// Модификация версии
+currentVersion += versionModifier;
+
+if (resultLines.Count != 0)
+{
+    FileHandling.GenerateCommitFile(projectDirrectory, resultLines, currentVersion);
+    FileHandling.AppendHistoryFile(projectDirrectory, resultLines, currentVersion);
+}
+else
+{
+    Console.WriteLine("! Не было найдено ни одной строки коммита !");
+}
 
 public class FileHandling
 {
@@ -197,7 +235,7 @@ public class FileHandling
 
         if (!resultString.StartsWith("-"))
         {
-            if (!string.IsNullOrEmpty(resultString))
+            if (!string.IsNullOrEmpty(resultString) && !resultString.StartsWith("v"))
             {
                 resultString = "- " + resultString;
             }
@@ -215,10 +253,10 @@ public class FileHandling
             resultString = tabs + resultString;
         }
 
-        return resultString;
+        return CommitLineModification(resultString);
     }
 
-    public static void GenerateCommitFile(string path, List<string> lines)
+    public static void GenerateCommitFile(string path, List<string> lines, Version version)
     {
         string pathToFile = path;
 
@@ -230,7 +268,7 @@ public class FileHandling
 
         using (StreamWriter sw = new StreamWriter(pathToFile))
         {
-            sw.WriteLine("v a.b.c");
+            sw.WriteLine(version.ToString());
             sw.WriteLine("");
 
             foreach (var line in lines)
@@ -241,4 +279,165 @@ public class FileHandling
 
         Console.WriteLine($"Был сгенерирован файл коммита по пути: {pathToFile}");
     }
+
+    public static Version FindVersionInHistoryFile(string path)
+    {
+        string pathToFile = path;
+
+        if (!path.EndsWith("\\"))
+        {
+            pathToFile += "\\";
+        }
+        pathToFile += "history.txt";
+
+        try
+        {
+            Version resultVersion = new Version();
+
+            using (StreamReader sr = new StreamReader(pathToFile))
+            {
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine().Trim();
+
+                    if (line.StartsWith("v") || line.StartsWith("V"))
+                    {
+                        resultVersion = Version.ParseFromString(line);
+                    }
+                }
+            }
+
+            return resultVersion;
+        }
+        catch
+        {
+            return new Version();
+        }
+    }
+
+    public static void AppendHistoryFile(string path, List<string> lines, Version version)
+    {
+        string pathToFile = path;
+
+        if (!path.EndsWith("\\"))
+        {
+            pathToFile += "\\";
+        }
+        pathToFile += "history.txt";
+
+        using (StreamWriter sw = new StreamWriter(pathToFile, true))
+        {
+            sw.WriteLine(version.ToString());
+            sw.WriteLine("");
+
+            foreach (var line in lines)
+            {
+                sw.WriteLine(line);
+            }
+
+            sw.WriteLine();
+            sw.WriteLine("----------------------------------------------------------------------------------------------");
+            sw.WriteLine();
+        }
+
+        Console.WriteLine($"Был дополнен файл истории коммитов по пути: {pathToFile}");
+    }
+
+    public static string CommitLineModification(string commitLine)
+    {
+        Func<string, string, string, string> modifierDelegate = (string line, string key, string value) =>
+        {
+            return line
+            .Replace($"#{key.ToLower()}", $"[{value.ToUpper()}]")
+            .Replace($"#{key.ToUpper()}", $"[{value.ToUpper()}]")
+            ;
+        };
+
+        commitLine = modifierDelegate(commitLine, "f", "FIX");
+        commitLine = modifierDelegate(commitLine, "m", "MODIFY");
+        commitLine = modifierDelegate(commitLine, "e", "EVENT");
+        commitLine = modifierDelegate(commitLine, "u", "UPDATE");
+        commitLine = modifierDelegate(commitLine, "a", "ADD");
+        commitLine = modifierDelegate(commitLine, "i", "INFORMATION");
+        commitLine = modifierDelegate(commitLine, "n", "NOTE");
+
+        return commitLine;
+    }
 }
+
+public class Version
+{
+    public int HighNumber { get; set; } = 0;
+
+    public int MiddleNumber { get; set; } = 0;
+    
+    public int LowNumber { get; set; } = 0;
+
+    public static Version operator+(Version origin, Version adding)
+    {
+        origin.HighNumber += adding.HighNumber;
+        origin.MiddleNumber += adding.MiddleNumber;
+        origin.LowNumber += adding.LowNumber;
+
+        return origin;
+    }
+
+    public override string ToString()
+    {
+        return $"v {HighNumber}.{MiddleNumber}.{LowNumber}";
+    }
+
+    public static Version? ParseFromString(string value)
+    {
+        value = value.Trim();
+
+        if (value.StartsWith("v") || value.StartsWith("V"))
+        {
+            try
+            {
+                var elements = value.Replace("v", "").Replace("V", "").Trim().Split(".").ToArray();
+
+                Version result = new Version();
+
+                try
+                {
+                    result.HighNumber = int.Parse(elements[0]);
+                }
+                catch
+                {
+
+                }
+
+                try
+                {
+                    result.MiddleNumber = int.Parse(elements[1]);
+                }
+                catch
+                {
+
+                }
+
+                try
+                {
+                    result.LowNumber = int.Parse(elements[2]);
+                }
+                catch
+                {
+
+                }
+
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+}
+
