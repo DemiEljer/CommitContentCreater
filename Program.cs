@@ -85,7 +85,7 @@ if (currentVersion.HighNumber == 0
 }
 
 // Поиск модификатора версии в файлах
-Version versionModifier = new Version() { LowNumber = 1 };
+Version versionModifier = new Version();
 for (int i = 0; i < resultLines.Count;)
 {
     var _versionModifier = Version.ParseFromString(resultLines[i]);
@@ -375,9 +375,21 @@ public class Version
 
     public static Version operator+(Version origin, Version adding)
     {
-        origin.HighNumber += adding.HighNumber;
-        origin.MiddleNumber += adding.MiddleNumber;
-        origin.LowNumber += adding.LowNumber;
+        if (adding.HighNumber > 0)
+        {
+            origin.HighNumber += adding.HighNumber;
+            origin.MiddleNumber = 0;
+            origin.LowNumber = 0;
+        }
+        else if (adding.MiddleNumber > 0)
+        {
+            origin.MiddleNumber += adding.MiddleNumber;
+            origin.LowNumber = 0;
+        }
+        else if (origin.LowNumber > 0)
+        {
+            origin.LowNumber += adding.LowNumber;
+        }
 
         return origin;
     }
