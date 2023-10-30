@@ -297,6 +297,7 @@ namespace CommitContentCreater
             {
                 resultList.Add("");
                 resultList.Add($"~~~ {auther} [{date}] ~~~");
+                resultList.Add("");
                 foreach (var line in lines)
                 {
                     resultList.Add(line);
