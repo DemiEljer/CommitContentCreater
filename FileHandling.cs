@@ -64,7 +64,7 @@ namespace CommitContentCreater
                             || lineType == CommitLineType.StartOfCommitLines
                             || (lineType == CommitLineType.EndOfCommitLines && prevReadingState == FileParsingState.MulltilineCommentReading))
                         {
-                            var commitLine = _HandleLine(line);
+                            var commitLine = HandleCommitLine(line);
 
                             if (!string.IsNullOrEmpty(commitLine))
                             {
@@ -121,8 +121,10 @@ namespace CommitContentCreater
             }
         }
 
-        private static string _HandleLine(string originLine)
+        public static string HandleCommitLine(string originLine)
         {
+            int tabsCount = originLine.Where(s => s == '\t').Count();
+
             var resultString = originLine.Replace("//~", "").Replace("/*~", "").Replace("~*/", "").Replace("*/", "").Replace("*", "").Trim();
 
             if (!resultString.StartsWith("-"))
@@ -245,30 +247,20 @@ namespace CommitContentCreater
 
             string userName = Environment.UserName;
 
+            List<string> newHsitoryFileContent = GetHistoryFileCommit(userName
+                , DateTime.Now.ToString()
+                , lines, version
+                , historyFileContent.Count == 0
+                  || isNewVersion);
+
             if (historyFileContent.Count == 0
                 || isNewVersion)
             {
-                historyFileContent.Add(version.ToString());
-                historyFileContent.Add($"~~~ {userName} [{DateTime.Now.ToString()}] ~~~");
-                historyFileContent.Add("");
-
-                foreach (var line in lines)
-                {
-                    historyFileContent.Add(line);
-                }
-
-                historyFileContent.Add("");
-                historyFileContent.Add("===============================================================================================");
-                historyFileContent.Add("");
+                historyFileContent.AddRange(newHsitoryFileContent);
             }
             else
             {
-                historyFileContent.Insert(historyFileContent.Count - 3, "");
-                historyFileContent.Insert(historyFileContent.Count - 3, $"~~~ {userName} [{DateTime.Now.ToString()}] ~~~");
-                foreach (var line in lines)
-                {
-                    historyFileContent.Insert(historyFileContent.Count - 3, line);
-                }
+                historyFileContent.InsertRange(historyFileContent.Count - 3, newHsitoryFileContent);
             }
 
             using (StreamWriter sw = new StreamWriter(pathToFile))
@@ -280,6 +272,38 @@ namespace CommitContentCreater
             }
 
             Console.WriteLine($"Был дополнен файл истории коммитов по пути: {pathToFile}");
+        }
+
+        public static List<string> GetHistoryFileCommit(string auther, string date, List<string> lines, Version version, bool isNewVersion)
+        {
+            List<string> resultList = new List<string>();
+
+            if (isNewVersion)
+            {
+                resultList.Add(version.ToString());
+                resultList.Add($"~~~ {auther} [{date}] ~~~");
+                resultList.Add("");
+
+                foreach (var line in lines)
+                {
+                    resultList.Add(line);
+                }
+
+                resultList.Add("");
+                resultList.Add("===============================================================================================");
+                resultList.Add("");
+            }
+            else
+            {
+                resultList.Add("");
+                resultList.Add($"~~~ {auther} [{date}] ~~~");
+                foreach (var line in lines)
+                {
+                    resultList.Add(line);
+                }
+            }
+
+            return resultList;
         }
 
         public static string CommitLineModification(string commitLine)
@@ -302,5 +326,7 @@ namespace CommitContentCreater
 
             return commitLine;
         }
+    
+        
     }
 }

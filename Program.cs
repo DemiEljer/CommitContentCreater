@@ -10,11 +10,13 @@ internal class Program
 
         bool cleanFilesFlag = false;
         string projectDirrectory = ".\\";
+        string gitHistoryExtractionPath = ".\\log.txt";
         List<string> fileExtentions = new List<string>();
 
         bool extentionReading = false;
         bool helpShow = false;
         bool findVersion = false;
+        bool fromGitCommitFileExtraction = false;
         for (int i = 0; i < args.Length; i++)
         {
             try
@@ -35,12 +37,20 @@ internal class Program
                 {
                     findVersion = true;
                 }
+                else if (args[i] == "-g")
+                {
+                    fromGitCommitFileExtraction = true;
+                }
                 else if (!string.IsNullOrEmpty(args[i]))
                 {
                     if (extentionReading)
                     {
                         fileExtentions.Add(args[i]);
                         extentionReading = false;
+                    }
+                    else if (fromGitCommitFileExtraction)
+                    {
+                        gitHistoryExtractionPath = args[i];
                     }
                     else
                     {
@@ -59,13 +69,12 @@ internal class Program
             }
         }
 
-        CommitContentCreater.Version currentVersion = FileHandling.FindVersionInHistoryFile(projectDirrectory);
-
         if (helpShow)
         {
             Console.WriteLine($"CommitContentCreater {applicationVersion}");
             Console.WriteLine("==========================================");
             Console.WriteLine("Описание аргументов:");
+            Console.WriteLine("-g <path>      : Сгенерировать файл истории из лога git;");
             Console.WriteLine("-v             : Вывести текущую версию проекта;");
             Console.WriteLine("-h             : Выводит справочную ифнормацию по утилите;");
             Console.WriteLine("-c             : Флаг очистка проекта от строк с описанием коммита;");
@@ -73,12 +82,19 @@ internal class Program
             Console.WriteLine("<Path>         : Путь к директории указывается просто как строка.");
         }
 
+        if (fromGitCommitFileExtraction)
+        {
+            CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
+        }
+
+        CommitContentCreater.Version currentVersion = FileHandling.FindVersionInHistoryFile(projectDirrectory);
+
         if (findVersion)
         {
             Console.WriteLine(currentVersion.ToString());
         }
 
-        if (helpShow || findVersion)
+        if (helpShow || findVersion || fromGitCommitFileExtraction)
         {
             return;
         }

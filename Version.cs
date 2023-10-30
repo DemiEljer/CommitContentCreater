@@ -8,6 +8,8 @@ namespace CommitContentCreater
 {
     public class Version
     {
+        private static char[] _PossibleSymboles { get; } = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'};
+
         public int HighNumber { get; set; } = 0;
 
         public int MiddleNumber { get; set; } = 0;
@@ -65,7 +67,7 @@ namespace CommitContentCreater
             {
                 try
                 {
-                    var elements = value.Replace("v", "").Replace("V", "").Trim().Split(".").ToArray();
+                    var elements = _FilterLine(value).Split(".").ToArray();
 
                     Version result = new Version();
 
@@ -107,6 +109,33 @@ namespace CommitContentCreater
             {
                 return null;
             }
+        }
+
+        private static string _FilterLine(string line)
+        {
+            string resultLine = "";
+
+            int dotsCount = 0;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (_PossibleSymboles.Contains(line[i]))
+                {
+                    resultLine += line[i];
+                }
+                // Отсечение мусора псле указания версии
+                else if (dotsCount == 2)
+                {
+                    break;
+                }
+
+                if (line[i] == '.')
+                {
+                    dotsCount++;
+                }
+            }
+
+            return resultLine;
         }
 
         public Version Clone()
