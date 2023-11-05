@@ -91,7 +91,7 @@ internal class Program
             Console.WriteLine("-[-][-]...        : Управление табуляцией (вложенностью)");
             Console.WriteLine("Сокращения и модификаторы:");
             Console.WriteLine("#!                : Комментарий-заголовок (без -)");
-            Console.WriteLine("#[Number]         : Позиция комментария в коммте");
+            Console.WriteLine("#[Number]         : Позиция комментария в коммите");
             Console.WriteLine("#f                : [FIX]");
             Console.WriteLine("#m                : [MODIFY]");
             Console.WriteLine("#e                : [EVENT]");
