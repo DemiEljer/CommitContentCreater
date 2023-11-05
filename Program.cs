@@ -1,4 +1,5 @@
 ﻿using CommitContentCreater;
+using CommitContentCreater.Models;
 using System;
 using System.Linq;
 
@@ -6,12 +7,15 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.0.0";
+        string applicationVersion = "v1.1.0";
 
         bool cleanFilesFlag = false;
-        string projectDirrectory = ".\\";
+        string projectDirrectory = "D:\\Work\\Lipgart\\TMS\\Projects\\PAZ_Vector_PT01_Project\\VCU_PAZ_Vector_Electro_PT101";//".\\";
         string gitHistoryExtractionPath = ".\\log.txt";
         List<string> fileExtentions = new List<string>();
+
+        fileExtentions.Add("h");
+        fileExtentions.Add("c");
 
         bool extentionReading = false;
         bool helpShow = false;
@@ -74,12 +78,29 @@ internal class Program
             Console.WriteLine($"CommitContentCreater {applicationVersion}");
             Console.WriteLine("==========================================");
             Console.WriteLine("Описание аргументов:");
-            Console.WriteLine("-g <path>      : Сгенерировать файл истории из лога git;");
-            Console.WriteLine("-v             : Вывести текущую версию проекта;");
-            Console.WriteLine("-h             : Выводит справочную ифнормацию по утилите;");
-            Console.WriteLine("-c             : Флаг очистка проекта от строк с описанием коммита;");
-            Console.WriteLine("-e <extention> : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
-            Console.WriteLine("<Path>         : Путь к директории указывается просто как строка.");
+            Console.WriteLine("-g <path>         : Сгенерировать файл истории из лога git;");
+            Console.WriteLine("-v                : Вывести текущую версию проекта;");
+            Console.WriteLine("-h                : Выводит справочную ифнормацию по утилите;");
+            Console.WriteLine("-c                : Флаг очистка проекта от строк с описанием коммита;");
+            Console.WriteLine("-e <extention>    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
+            Console.WriteLine("<Path>            : Путь к директории указывается просто как строка.");
+            Console.WriteLine("Аспекты нотации оформления:");
+            Console.WriteLine("//~ [Comment]     : Строка комментария коммита (одиночная)");
+            Console.WriteLine("/*~ [Comments] */ : Строка комментария коммита (многосточная)");
+            Console.WriteLine("//~ va.b.c        : Указание дельты новой версии (//~ v0.0.1 : v1.0.0 -> v1.0.1)");
+            Console.WriteLine("-[-][-]...        : Управление табуляцией (вложенностью)");
+            Console.WriteLine("Сокращения и модификаторы:");
+            Console.WriteLine("#!                : Комментарий-заголовок (без -)");
+            Console.WriteLine("#[Number]         : Позиция комментария в коммте");
+            Console.WriteLine("#f                : [FIX]");
+            Console.WriteLine("#m                : [MODIFY]");
+            Console.WriteLine("#e                : [EVENT]");
+            Console.WriteLine("#u                : [UPDATE]");
+            Console.WriteLine("#a                : [ADD]");
+            Console.WriteLine("#i                : [INFORMATION]");
+            Console.WriteLine("#n                : [NOTE]");
+            Console.WriteLine("#c                : [CORRECTION]");
+            Console.WriteLine("#im               : [IMPROVEMENT]");
         }
 
         if (fromGitCommitFileExtraction)
@@ -87,7 +108,7 @@ internal class Program
             CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
         }
 
-        CommitContentCreater.Version currentVersion = FileHandling.FindVersionInHistoryFile(projectDirrectory);
+        CommitContentCreater.VersionModel currentVersion = CommitFileHander.FindVersionInHistoryFile(projectDirrectory);
 
         if (findVersion)
         {
@@ -99,8 +120,8 @@ internal class Program
             return;
         }
 
-        List<string> resultLines = new List<string>();
-        CommitContentCreater.Version prevVersion = currentVersion.Clone();
+        CommitModel commitModel = new CommitModel();
+        VersionModel prevVersion = currentVersion.Clone();
 
         Console.WriteLine($"CommitContentCreater {applicationVersion}");
         Console.WriteLine("==========================================");
@@ -113,7 +134,7 @@ internal class Program
 
                 if (fileExtentions.Contains(extention))
                 {
-                    resultLines.AddRange(FileHandling.FindCommitLines(filePath, cleanFilesFlag));
+                    CommitFileHander.FindCommitLines(commitModel, filePath, cleanFilesFlag);
                 }
             }
         }
@@ -122,30 +143,17 @@ internal class Program
             Console.WriteLine("! Ошибка доступа к директории проекта !");
         }
 
-        // Поиск модификатора версии в файлах
-        CommitContentCreater.Version versionModifier = new CommitContentCreater.Version();
-        for (int i = 0; i < resultLines.Count;)
-        {
-            var _versionModifier = CommitContentCreater.Version.ParseFromString(resultLines[i]);
-
-            if (_versionModifier != null)
-            {
-                versionModifier = _versionModifier;
-                resultLines.RemoveAt(i);
-            }
-            else
-            {
-                i++;
-            }
-        }
-
         // Модификация версии
-        currentVersion += versionModifier;
-
-        if (resultLines.Count != 0)
+        if (commitModel.Version.IsEmpty)
         {
-            FileHandling.GenerateCommitFile(projectDirrectory, resultLines, currentVersion);
-            FileHandling.AppendHistoryFile(projectDirrectory, resultLines, currentVersion, currentVersion.Compare(prevVersion) != 0);
+            commitModel.IsNewVersion = false;
+        }
+        commitModel.Version = currentVersion + commitModel.Version;
+
+        if (commitModel.Lines.Length != 0)
+        {
+            CommitFileHander.GenerateCommitFile(projectDirrectory, commitModel);
+            CommitFileHander.AppendHistoryFile(projectDirrectory, commitModel);
         }
         else
         {
