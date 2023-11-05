@@ -37,6 +37,8 @@ namespace CommitContentCreater.Models
 
         public bool IsNewVersion { get; set; } = true;
 
+        private Dictionary<int, int> MinimumMultilinePriority { get; } = new Dictionary<int, int>();
+
         public string GetDate()
         {
             if (string.IsNullOrEmpty(StringDate))
@@ -51,9 +53,35 @@ namespace CommitContentCreater.Models
 
         public void AppendLine(CommitLineModel line)
         {
-            if (line == null || !line.IsInited)
+            if (line == null)
             {
                 return;
+            }
+
+            if (!line.IsInited)
+            {
+                if (line.Priority < int.MaxValue
+                    && line.MultilineCommentIndex < int.MaxValue)
+                {
+                    if (MinimumMultilinePriority.ContainsKey(line.MultilineCommentIndex))
+                    {
+                        MinimumMultilinePriority[line.MultilineCommentIndex] = line.Priority;
+                    }
+                    else
+                    {
+                        MinimumMultilinePriority.Add(line.MultilineCommentIndex, line.Priority);
+                    }
+
+
+                }
+
+                return;
+            }
+
+            if (MinimumMultilinePriority.ContainsKey(line.MultilineCommentIndex)
+                && line.Priority != MinimumMultilinePriority[line.MultilineCommentIndex])
+            {
+                line.Priority = MinimumMultilinePriority[line.MultilineCommentIndex];
             }
 
             for (int i = 0; i < _Lines.Count; i++)
@@ -67,5 +95,7 @@ namespace CommitContentCreater.Models
 
             _Lines.Add(line);
         }
+
+
     }
 }

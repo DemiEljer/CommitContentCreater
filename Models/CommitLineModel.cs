@@ -23,5 +23,7 @@ namespace CommitContentCreater.Models
         public bool IsCapital { get; set; } = false;
 
         public bool IsVersion { get; set; } = false;
+
+        public int MultilineCommentIndex { get; set; } = int.MaxValue;
     }
 }

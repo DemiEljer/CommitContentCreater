@@ -11,6 +11,8 @@ namespace CommitContentCreater.Handlers
     {
         private FileParsingState _State { get; set; } = FileParsingState.OrdinaryReading;
 
+        private static int _MultilineCommentIndex { get; set; } = 0;
+
         public CommitLineModel? ExtractLine(string line)
         {
             var lineType = CommitLineHandler.IsCommitLine(line);
@@ -20,6 +22,14 @@ namespace CommitContentCreater.Handlers
                 || lineType == CommitLineType.StartOfCommitLines
                 || (lineType == CommitLineType.EndOfCommitLines && _State == FileParsingState.MulltilineCommentReading))
             {
+                var commitLineModel = CommitLineHandler.CreateCommitLine(line);
+                // Фиксация индекса многострочного комментария
+                if (lineType == CommitLineType.StartOfCommitLines
+                    || _State == FileParsingState.MulltilineCommentReading)
+                {
+                    commitLineModel.MultilineCommentIndex = _MultilineCommentIndex;
+                }
+                
                 switch (_State)
                 {
                     case FileParsingState.OrdinaryReading:
@@ -33,11 +43,12 @@ namespace CommitContentCreater.Handlers
                         if (lineType == CommitLineType.EndOfCommitLines)
                         {
                             _State = FileParsingState.OrdinaryReading;
+                            _MultilineCommentIndex++;
                         }
                         break;
                 }
 
-                return CommitLineHandler.CreateCommitLine(line);
+                return commitLineModel;
             }
             else
             {
