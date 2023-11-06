@@ -10,17 +10,16 @@ internal class Program
         string applicationVersion = "v1.1.0";
 
         bool cleanFilesFlag = false;
-        string projectDirrectory = "D:\\Work\\Lipgart\\TMS\\Projects\\PAZ_Vector_PT01_Project\\VCU_PAZ_Vector_Electro_PT101";//".\\";
+        string projectDirrectory = ".\\";
         string gitHistoryExtractionPath = ".\\log.txt";
         List<string> fileExtentions = new List<string>();
-
-        fileExtentions.Add("h");
-        fileExtentions.Add("c");
+        List<string> filePathes = new List<string>();
 
         bool extentionReading = false;
         bool helpShow = false;
         bool findVersion = false;
         bool fromGitCommitFileExtraction = false;
+        bool filePathReading = false;
         for (int i = 0; i < args.Length; i++)
         {
             try
@@ -28,38 +27,64 @@ internal class Program
                 if (args[i] == "-c")
                 {
                     cleanFilesFlag = true;
+                    extentionReading = false;
+                    fromGitCommitFileExtraction = false;
+                    filePathReading = false;
                 }
                 else if (args[i] == "-e")
                 {
                     extentionReading = true;
+                    fromGitCommitFileExtraction = false;
+                    filePathReading = false;
                 }
                 else if (args[i] == "-h")
                 {
                     helpShow = true;
+                    extentionReading = false;
+                    fromGitCommitFileExtraction = false;
+                    filePathReading = false;
                 }
                 else if (args[i] == "-v")
                 {
                     findVersion = true;
+                    extentionReading = false;
+                    fromGitCommitFileExtraction = false;
+                    filePathReading = false;
                 }
                 else if (args[i] == "-g")
                 {
                     fromGitCommitFileExtraction = true;
+                    extentionReading = false;
+                    filePathReading = false;
+                }
+                else if (args[i] == "-f")
+                {
+                    filePathReading = true;
+                    extentionReading = false;
+                    fromGitCommitFileExtraction = false;
                 }
                 else if (!string.IsNullOrEmpty(args[i]))
                 {
                     if (extentionReading)
                     {
                         fileExtentions.Add(args[i]);
-                        extentionReading = false;
                     }
                     else if (fromGitCommitFileExtraction)
                     {
                         gitHistoryExtractionPath = args[i];
                     }
+                    else if (filePathReading)
+                    {
+                        filePathes.Add(args[i]);
+                    }
                     else
                     {
                         projectDirrectory = args[i];
                     }
+
+                    extentionReading = false;
+                    fromGitCommitFileExtraction = false;
+                    filePathReading = false;
                 }
                 else
                 {
@@ -78,11 +103,12 @@ internal class Program
             Console.WriteLine($"CommitContentCreater {applicationVersion}");
             Console.WriteLine("==========================================");
             Console.WriteLine("Описание аргументов:");
-            Console.WriteLine("-g <path>         : Сгенерировать файл истории из лога git;");
+            Console.WriteLine("-g [path]         : Сгенерировать файл истории из лога git;");
             Console.WriteLine("-v                : Вывести текущую версию проекта;");
             Console.WriteLine("-h                : Выводит справочную ифнормацию по утилите;");
             Console.WriteLine("-c                : Флаг очистка проекта от строк с описанием коммита;");
-            Console.WriteLine("-e <extention>    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
+            Console.WriteLine("-e [extention]    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
+            Console.WriteLine("-f [path]         : Указание конкретного файла для анализа;");
             Console.WriteLine("<Path>            : Путь к директории указывается просто как строка.");
             Console.WriteLine("Аспекты нотации оформления:");
             Console.WriteLine("//~ [Comment]     : Строка комментария коммита (одиночная)");
@@ -132,7 +158,7 @@ internal class Program
             {
                 string extention = filePath.Split('.').Last();
 
-                if (fileExtentions.Contains(extention))
+                if (filePathes.Contains(filePath) || fileExtentions.Contains(extention))
                 {
                     CommitFileHander.FindCommitLines(commitModel, filePath, cleanFilesFlag);
                 }
