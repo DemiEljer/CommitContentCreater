@@ -24,7 +24,11 @@ namespace CommitContentCreater
                 {
                     if (commitLine.IsVersion)
                     {
-                        commitModel.Version = VersionsHandler.ParseFromString(commitLine.Line);
+                        var newVersion = VersionsHandler.ParseFromString(commitLine.Line);
+                        if (newVersion != null && newVersion.Compare(commitModel.Version) > 0)
+                        {
+                            commitModel.Version = newVersion;
+                        }
                     }
                     else
                     {
