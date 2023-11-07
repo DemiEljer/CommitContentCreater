@@ -7,8 +7,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspose.Zip" Version="23.10.0" />
-  </ItemGroup>
-
 </Project>

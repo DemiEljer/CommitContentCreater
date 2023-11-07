@@ -1,7 +1,7 @@
-﻿using Aspose.Zip.Rar;
-using CommitContentCreater;
+﻿using CommitContentCreater;
 using CommitContentCreater.Models;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using static System.Net.Mime.MediaTypeNames;
@@ -23,6 +23,7 @@ internal class Program
         bool findVersion = false;
         bool fromGitCommitFileExtraction = false;
         bool filePathReading = false;
+
         for (int i = 0; i < args.Length; i++)
         {
             try
@@ -68,44 +69,7 @@ internal class Program
                 }
                 else if (args[i] == "-u")
                 {
-                    string pathToUpdateFile = $"{AppDomain.CurrentDomain.BaseDirectory}\\update.rar";
-
-                    Console.WriteLine("Загрузка файлов утилиты...");
-                    try
-                    {
-                        using (var client = new WebClient())
-                        {
-                            client.DownloadFile("https://github.com/DemiEljer/CommitContentCreater/releases/latest/download/CommitContentCreater.rar", pathToUpdateFile);
-                        }
-                    }
-                    catch
-                    {
-                        Console.WriteLine("! Ошибка загрузки файла обновления !");
-                        return;
-                    }
-
-                    if (File.Exists(pathToUpdateFile))
-                    {
-                        Console.WriteLine("Файл обновления был успешно скачан!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("! Ошибка загрузки файла обновления !");
-                        return;
-                    }
-
-                    try
-                    {
-                        RarArchive archive = new RarArchive(pathToUpdateFile);
-                        archive.ExtractToDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("! Ошибка распаковки файлов обновления !");
-                        return;
-                    }
-
-                    Console.WriteLine("Утилита была успешно обновлена!");
+                    UpdateHandler.Update();
 
                     return;
                 }
@@ -155,6 +119,7 @@ internal class Program
             Console.WriteLine("-c                : Флаг очистка проекта от строк с описанием коммита;");
             Console.WriteLine("-e [extention]    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
             Console.WriteLine("-f [path]         : Указание конкретного файла для анализа;");
+            Console.WriteLine("-u                : Обновить утилиту;");
             Console.WriteLine("<Path>            : Путь к директории указывается просто как строка.");
             Console.WriteLine("Аспекты нотации оформления:");
             Console.WriteLine("//~ [Comment]     : Строка комментария коммита (одиночная)");
@@ -234,5 +199,6 @@ internal class Program
         }
     }
 }
+
 
 
