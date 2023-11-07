@@ -10,7 +10,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.2.1";
+        string applicationVersion = "v1.2.2";
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
@@ -158,6 +158,7 @@ internal class Program
         }
 
         CommitModel commitModel = new CommitModel();
+        commitModel.Date =  DateTime.Now;
         VersionModel prevVersion = currentVersion.Clone();
 
         Console.WriteLine($"CommitContentCreater {applicationVersion}");
