@@ -10,7 +10,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.1.0";
+        string applicationVersion = "v1.2.0";
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
