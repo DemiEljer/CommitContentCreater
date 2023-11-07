@@ -1,7 +1,10 @@
-﻿using CommitContentCreater;
+﻿using Aspose.Zip.Rar;
+using CommitContentCreater;
 using CommitContentCreater.Models;
 using System;
 using System.Linq;
+using System.Net;
+using static System.Net.Mime.MediaTypeNames;
 
 internal class Program
 {
@@ -10,7 +13,7 @@ internal class Program
         string applicationVersion = "v1.1.0";
 
         bool cleanFilesFlag = false;
-        string projectDirrectory = ".\\";
+        string projectDirrectory = "";
         string gitHistoryExtractionPath = ".\\log.txt";
         List<string> fileExtentions = new List<string>();
         List<string> filePathes = new List<string>();
@@ -62,6 +65,49 @@ internal class Program
                     filePathReading = true;
                     extentionReading = false;
                     fromGitCommitFileExtraction = false;
+                }
+                else if (args[i] == "-u")
+                {
+                    string pathToUpdateFile = $"{AppDomain.CurrentDomain.BaseDirectory}\\update.rar";
+
+                    Console.WriteLine("Загрузка файлов утилиты...");
+                    try
+                    {
+                        using (var client = new WebClient())
+                        {
+                            client.DownloadFile("https://github.com/DemiEljer/CommitContentCreater/releases/latest/download/CommitContentCreater.rar", pathToUpdateFile);
+                        }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("! Ошибка загрузки файла обновления !");
+                        return;
+                    }
+
+                    if (File.Exists(pathToUpdateFile))
+                    {
+                        Console.WriteLine("Файл обновления был успешно скачан!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("! Ошибка загрузки файла обновления !");
+                        return;
+                    }
+
+                    try
+                    {
+                        RarArchive archive = new RarArchive(pathToUpdateFile);
+                        archive.ExtractToDirectory(AppDomain.CurrentDomain.BaseDirectory);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("! Ошибка распаковки файлов обновления !");
+                        return;
+                    }
+
+                    Console.WriteLine("Утилита была успешно обновлена!");
+
+                    return;
                 }
                 else if (!string.IsNullOrEmpty(args[i]))
                 {
@@ -158,7 +204,8 @@ internal class Program
             {
                 string extention = filePath.Split('.').Last();
 
-                if (filePathes.Contains(filePath) || fileExtentions.Contains(extention))
+                if (filePathes.Find(e => filePath.Contains(e)) != null 
+                    || fileExtentions.Contains(extention))
                 {
                     CommitFileHander.FindCommitLines(commitModel, filePath, cleanFilesFlag);
                 }
