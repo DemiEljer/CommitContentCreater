@@ -13,7 +13,14 @@ namespace CommitContentCreater
         {
             try
             {
-                Process.Start($"{AppDomain.CurrentDomain.BaseDirectory}update.exe", "https://github.com/DemiEljer/CommitContentCreater/releases/latest/download/update.rar");
+                if (File.Exists($"{AppDomain.CurrentDomain.BaseDirectory}update.exe"))
+                {
+                    Process.Start($"{AppDomain.CurrentDomain.BaseDirectory}update.exe", "https://github.com/DemiEljer/CommitContentCreater/releases/latest/download/update.rar");
+                }
+                else
+                {
+                    Process.Start("UniversalUpdater.exe", $"-p {AppDomain.CurrentDomain.BaseDirectory} https://github.com/DemiEljer/CommitContentCreater/releases/latest/download/update.rar");
+                }
             }
             catch
             {

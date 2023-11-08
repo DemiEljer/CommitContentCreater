@@ -24,6 +24,8 @@ internal class Program
         bool fromGitCommitFileExtraction = false;
         bool filePathReading = false;
 
+        UpdateHandler.Update();
+
         for (int i = 0; i < args.Length; i++)
         {
             try
@@ -120,7 +122,7 @@ internal class Program
             Console.WriteLine("-e [extention]    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
             Console.WriteLine("-f [path]         : Указание конкретного файла для анализа;");
             Console.WriteLine("-u                : Обновить утилиту;");
-            Console.WriteLine("<Path>            : Путь к директории указывается просто как строка.");
+            Console.WriteLine("[Path]            : Путь к директории указывается просто как строка.");
             Console.WriteLine("Аспекты нотации оформления:");
             Console.WriteLine("//~ [Comment]     : Строка комментария коммита (одиночная)");
             Console.WriteLine("/*~ [Comments] */ : Строка комментария коммита (многосточная)");
