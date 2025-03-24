@@ -24,6 +24,7 @@ internal class Program
         bool helpShow = false;
         bool findVersion = false;
         bool fromGitCommitFileExtraction = false;
+        bool fromGitCommitFileExtractionCommand = false;
         bool filePathReading = false;
         bool showFoundFiles = false;
 
@@ -70,6 +71,7 @@ internal class Program
                         fromGitCommitFileExtraction = true;
                         extentionReading = false;
                         filePathReading = false;
+                        fromGitCommitFileExtractionCommand = true;
                     }
                     else if (args[i] == "-f")
                     {
@@ -167,7 +169,7 @@ internal class Program
             }
         }
 
-        if (fromGitCommitFileExtraction)
+        if (fromGitCommitFileExtractionCommand)
         {
             CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
         }
@@ -179,7 +181,7 @@ internal class Program
             Console.WriteLine(currentVersion.ToString());
         }
 
-        if (helpShow || findVersion || fromGitCommitFileExtraction)
+        if (helpShow || findVersion || fromGitCommitFileExtractionCommand)
         {
             return;
         }
