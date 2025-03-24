@@ -47,12 +47,12 @@ namespace CommitContentCreater
         {
             // Формирование имени выходного файла
             var pathElements = pathToGitLog.Replace("\\", "~").Replace("/", "~").Split("~");
-            string gitHistoryPath = string.Join("\\", pathElements.Take(pathElements.Count() - 1));
+            string gitHistoryPath = string.Join("/", pathElements.Take(pathElements.Count() - 1));
             if (string.IsNullOrEmpty(gitHistoryPath))
             {
                 gitHistoryPath = ".";
             }
-            gitHistoryPath += "\\gitHistory.txt";
+            gitHistoryPath += "/gitHistory.txt";
 
             return gitHistoryPath;
         }

@@ -18,7 +18,7 @@ internal class Program
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
-        string gitHistoryExtractionPath = ".\\log.txt";
+        string gitHistoryExtractionPath = "./log.txt";
         List<string> fileExtentions = new List<string>();
         List<string> filePathes = new List<string>();
 
