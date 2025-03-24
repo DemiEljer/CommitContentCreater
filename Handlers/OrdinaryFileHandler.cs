@@ -100,9 +100,14 @@ namespace CommitContentCreater
 
         public static string GetPathToFile(string pathToDirectory, string fileName)
         {
+            if (string.IsNullOrEmpty(pathToDirectory))
+            {
+                pathToDirectory = ".";
+            }
+
             if (!pathToDirectory.EndsWith("\\") && !pathToDirectory.EndsWith("/"))
             {
-                pathToDirectory += "\\";
+                pathToDirectory += "/";
             }
 
             return $"{pathToDirectory}{fileName}";
