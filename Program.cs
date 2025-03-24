@@ -1,4 +1,5 @@
-﻿using CommitContentCreater;
+using CommitContentCreater;
+using CommitContentCreater.Handlers;
 using CommitContentCreater.Models;
 using System;
 using System.Diagnostics;
@@ -6,11 +7,12 @@ using System.Linq;
 using System.Net;
 using static System.Net.Mime.MediaTypeNames;
 
+
 internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.2.2";
+        string applicationVersion = "v1.3.0";
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
@@ -23,121 +25,146 @@ internal class Program
         bool findVersion = false;
         bool fromGitCommitFileExtraction = false;
         bool filePathReading = false;
+        bool showFoundFiles = false;
 
-        for (int i = 0; i < args.Length; i++)
+        Console.WriteLine($"CommitContentCreater {applicationVersion}");
+        Console.WriteLine("==========================================");
+
+        var ArgsHandlingDelegate = (string[] args) =>
         {
-            try
+            for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "-c")
-                {
-                    cleanFilesFlag = true;
-                    extentionReading = false;
-                    fromGitCommitFileExtraction = false;
-                    filePathReading = false;
-                }
-                else if (args[i] == "-e")
-                {
-                    extentionReading = true;
-                    fromGitCommitFileExtraction = false;
-                    filePathReading = false;
-                }
-                else if (args[i] == "-h")
-                {
-                    helpShow = true;
-                    extentionReading = false;
-                    fromGitCommitFileExtraction = false;
-                    filePathReading = false;
-                }
-                else if (args[i] == "-v")
-                {
-                    findVersion = true;
-                    extentionReading = false;
-                    fromGitCommitFileExtraction = false;
-                    filePathReading = false;
-                }
-                else if (args[i] == "-g")
-                {
-                    fromGitCommitFileExtraction = true;
-                    extentionReading = false;
-                    filePathReading = false;
-                }
-                else if (args[i] == "-f")
-                {
-                    filePathReading = true;
-                    extentionReading = false;
-                    fromGitCommitFileExtraction = false;
-                }
-                else if (args[i] == "-u")
-                {
-                    UpdateHandler.Update();
+                args[i] = args[i].Replace("\"", "").Replace("'", "");
 
-                    return;
-                }
-                else if (!string.IsNullOrEmpty(args[i]))
+                try
                 {
-                    if (extentionReading)
+                    if (args[i] == "-c")
                     {
-                        fileExtentions.Add(args[i]);
+                        cleanFilesFlag = true;
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
                     }
-                    else if (fromGitCommitFileExtraction)
+                    else if (args[i] == "-e")
                     {
-                        gitHistoryExtractionPath = args[i];
+                        extentionReading = true;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
                     }
-                    else if (filePathReading)
+                    else if (args[i] == "-h")
                     {
-                        filePathes.Add(args[i]);
+                        helpShow = true;
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
+                    }
+                    else if (args[i] == "-v")
+                    {
+                        findVersion = true;
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
+                    }
+                    else if (args[i] == "-g")
+                    {
+                        fromGitCommitFileExtraction = true;
+                        extentionReading = false;
+                        filePathReading = false;
+                    }
+                    else if (args[i] == "-f")
+                    {
+                        filePathReading = true;
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                    }
+                    else if (args[i] == "-t")
+                    {
+                        showFoundFiles = true;
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
+                    }
+                    else if (args[i] == "-u")
+                    {
+                        //UpdateHandler.Update();
+                        Console.WriteLine("Внимение. Обновление версии ПО пока что не доступно!");
+
+                        return;
+                    }
+                    else if (!string.IsNullOrEmpty(args[i]))
+                    {
+                        if (extentionReading)
+                        {
+                            fileExtentions.Add(args[i]);
+                        }
+                        else if (fromGitCommitFileExtraction)
+                        {
+                            gitHistoryExtractionPath = args[i];
+                        }
+                        else if (filePathReading)
+                        {
+                            filePathes.Add(args[i]);
+                        }
+                        else
+                        {
+                            projectDirrectory = args[i];
+                        }
+
+                        extentionReading = false;
+                        fromGitCommitFileExtraction = false;
+                        filePathReading = false;
                     }
                     else
                     {
-                        projectDirrectory = args[i];
+                        Console.WriteLine("! Ошибка чтения аргумента !");
+                        Console.WriteLine("Посмотреть формат аргуменов утилиты можно с помощью параметра -h.");
                     }
-
-                    extentionReading = false;
-                    fromGitCommitFileExtraction = false;
-                    filePathReading = false;
                 }
-                else
+                catch
                 {
-                    Console.WriteLine("! Ошибка чтения аргумента !");
-                    helpShow = true;
+
+                }
+            }
+        };
+
+        if (args.Length == 0)
+        {
+            try
+            {
+                using (var fr = new StreamReader("./commit.gen"))
+                {
+                    args = ConfigFileHandler.ParseConfigFile(fr.ReadToEnd(), (message) =>
+                    {
+                        Console.WriteLine(message);
+                    });
+
+                    //Console.WriteLine(string.Join(",", args));
                 }
             }
             catch
             {
-
+                Console.WriteLine("Файл конфигурации (commit.gen) не был найден или произошла ошибка чтения.");
             }
+        }
+
+        // Обработка аргументов
+        ArgsHandlingDelegate(args);
+
+        // Нормализация путей
+        {
+            var pathNormalizer = (string path) => path.Replace("\\", "/").Trim();
+
+            projectDirrectory = pathNormalizer(projectDirrectory);
+            gitHistoryExtractionPath = pathNormalizer(gitHistoryExtractionPath);
+            filePathes = filePathes.Select(p => pathNormalizer(p)).ToList();
         }
 
         if (helpShow)
         {
-            Console.WriteLine($"CommitContentCreater {applicationVersion}");
-            Console.WriteLine("==========================================");
-            Console.WriteLine("Описание аргументов:");
-            Console.WriteLine("-g [path]         : Сгенерировать файл истории из лога git;");
-            Console.WriteLine("-v                : Вывести текущую версию проекта;");
-            Console.WriteLine("-h                : Выводит справочную ифнормацию по утилите;");
-            Console.WriteLine("-c                : Флаг очистка проекта от строк с описанием коммита;");
-            Console.WriteLine("-e [extention]    : Указание допустимое расширения файла для поиска описания коммита (-e h -e c);");
-            Console.WriteLine("-f [path]         : Указание конкретного файла для анализа;");
-            Console.WriteLine("-u                : Обновить утилиту;");
-            Console.WriteLine("<Path>            : Путь к директории указывается просто как строка.");
-            Console.WriteLine("Аспекты нотации оформления:");
-            Console.WriteLine("//~ [Comment]     : Строка комментария коммита (одиночная)");
-            Console.WriteLine("/*~ [Comments] */ : Строка комментария коммита (многосточная)");
-            Console.WriteLine("//~ va.b.c        : Указание дельты новой версии (//~ v0.0.1 : v1.0.0 -> v1.0.1)");
-            Console.WriteLine("-[-][-]...        : Управление табуляцией (вложенностью)");
-            Console.WriteLine("Сокращения и модификаторы:");
-            Console.WriteLine("#!                : Комментарий-заголовок (без -)");
-            Console.WriteLine("#[Number]         : Позиция комментария в коммите");
-            Console.WriteLine("#f                : [FIX]");
-            Console.WriteLine("#m                : [MODIFY]");
-            Console.WriteLine("#e                : [EVENT]");
-            Console.WriteLine("#u                : [UPDATE]");
-            Console.WriteLine("#a                : [ADD]");
-            Console.WriteLine("#i                : [INFORMATION]");
-            Console.WriteLine("#n                : [NOTE]");
-            Console.WriteLine("#c                : [CORRECTION]");
-            Console.WriteLine("#im               : [IMPROVEMENT]");
+            using (StreamReader sr = new StreamReader("help.txt"))
+            {
+                Console.WriteLine(sr.ReadToEnd());
+            }
         }
 
         if (fromGitCommitFileExtraction)
@@ -161,19 +188,26 @@ internal class Program
         commitModel.Date =  DateTime.Now;
         VersionModel prevVersion = currentVersion.Clone();
 
-        Console.WriteLine($"CommitContentCreater {applicationVersion}");
-        Console.WriteLine("==========================================");
+        int foundFilesCount = 0;
 
         try
         {
             foreach (var filePath in Directory.GetFiles(projectDirrectory, "*.*", SearchOption.AllDirectories))
             {
+                var _filePath = filePath.Replace("\\", "/");
+
                 string extention = filePath.Split('.').Last();
 
-                if (filePathes.Find(e => filePath.Contains(e)) != null 
+                if (filePathes.Find(e => filePath.EndsWith(e)) != null 
                     || fileExtentions.Contains(extention))
                 {
                     CommitFileHander.FindCommitLines(commitModel, filePath, cleanFilesFlag);
+
+                    foundFilesCount++;
+                    if (showFoundFiles)
+                    {
+                        Console.WriteLine($"Был обнаружен и обработан файл: {filePath}");
+                    }
                 }
             }
         }
@@ -193,6 +227,8 @@ internal class Program
         {
             CommitFileHander.GenerateCommitFile(projectDirrectory, commitModel);
             CommitFileHander.AppendHistoryFile(projectDirrectory, commitModel);
+
+            Console.WriteLine($"Было обнаружено и обработано файлов: {foundFilesCount}.");
         }
         else
         {

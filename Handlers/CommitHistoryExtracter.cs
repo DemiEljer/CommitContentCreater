@@ -1,4 +1,4 @@
-﻿using CommitContentCreater.Models;
+using CommitContentCreater.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

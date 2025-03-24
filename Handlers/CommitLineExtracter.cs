@@ -1,4 +1,4 @@
-﻿using CommitContentCreater.Models;
+using CommitContentCreater.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,23 @@ namespace CommitContentCreater.Handlers
     {
         private FileParsingState _State { get; set; } = FileParsingState.OrdinaryReading;
 
+        private bool _IsCommitLinesSearchingBlocked { get; set; } = false;
+
         private static int _MultilineCommentIndex { get; set; } = 0;
 
         public CommitLineModel? ExtractLine(string line)
         {
             var lineType = CommitLineHandler.IsCommitLine(line);
+
+            if (lineType == CommitLineType.BlockCommitLineSearching)
+            {
+                _IsCommitLinesSearchingBlocked = !_IsCommitLinesSearchingBlocked;
+            }
+
+            if (_IsCommitLinesSearchingBlocked)
+            {
+                return null;
+            }
 
             if (_State == FileParsingState.MulltilineCommentReading
                 || lineType == CommitLineType.SingleCommitLine

@@ -1,4 +1,4 @@
-﻿using CommitContentCreater.Models;
+using CommitContentCreater.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,12 @@ namespace CommitContentCreater
     {
         public static CommitLineType IsCommitLine(string originLine)
         {
-            if (originLine.Contains("//~"))
+            //~~~
+            if (originLine.Contains("//~~" + "~"))
+            {
+                return CommitLineType.BlockCommitLineSearching;
+            }
+            else if (originLine.Contains("//~"))
             {
                 return CommitLineType.SingleCommitLine;
             }
@@ -27,11 +32,14 @@ namespace CommitContentCreater
             {
                 return CommitLineType.NotACommitLine;
             }
+            //~~~
         }
 
         public static CommitLineModel CreateCommitLine(string commitLine)
         {
+            //~~~
             commitLine = commitLine.Replace("//~", "").Replace("/*~", "").Replace("~*/", "").Replace("*/", "").Replace("*", "").Trim();
+            //~~~
 
             Func<string, string, string, string> modifierDelegate = (linePart, key, value) =>
             {
@@ -121,6 +129,11 @@ namespace CommitContentCreater
                     commitLineElements[i] = modifierDelegate(commitLineElements[i], "n", "NOTE");
                     commitLineElements[i] = modifierDelegate(commitLineElements[i], "c", "CORRECTION");
                     commitLineElements[i] = modifierDelegate(commitLineElements[i], "im", "IMPROVEMENT");
+                    commitLineElements[i] = modifierDelegate(commitLineElements[i], "rm", "REMOVE");
+                    commitLineElements[i] = modifierDelegate(commitLineElements[i], "rp", "REPLACE");
+                    commitLineElements[i] = modifierDelegate(commitLineElements[i], "uc", "UNCHECKED");
+                    commitLineElements[i] = modifierDelegate(commitLineElements[i], "ph", "PLACEHOLDER");
+                    commitLineElements[i] = modifierDelegate(commitLineElements[i], "ex", "EXTENTION");
 
                     var isCapital = checkIsCapitalDelegate(commitLineElements[i]);
                     resultCommitLine.IsCapital |= isCapital;
