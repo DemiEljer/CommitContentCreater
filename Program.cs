@@ -1,10 +1,12 @@
 using CommitContentCreater;
 using CommitContentCreater.Handlers;
 using CommitContentCreater.Models;
+using CommitContentCreater.Properties;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -163,7 +165,7 @@ internal class Program
 
         if (helpShow)
         {
-            using (StreamReader sr = new StreamReader("help.txt"))
+            using (StreamReader sr = new StreamReader(new MemoryStream(Resources.help)))
             {
                 Console.WriteLine(sr.ReadToEnd());
             }
