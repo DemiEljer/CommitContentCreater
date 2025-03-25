@@ -3,6 +3,7 @@ using CommitContentCreater.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,7 +35,17 @@ namespace CommitContentCreater
 
             for (int i = commits.Count - 1; i >= 0; i--)
             {
-                historyFileContent.AddRange(CommitHandler.GetHistoryFileCommitContent(commits[i]));
+                var commitLines = CommitHandler.GetHistoryFileCommitContent(commits[i]);
+
+                if (historyFileContent.Count == 0
+                    || commits[i].IsNewVersion)
+                {
+                    historyFileContent.AddRange(commitLines);
+                }
+                else
+                {
+                    historyFileContent.InsertRange(historyFileContent.Count - 3, commitLines);
+                }
             }
 
             string gitHistoryPath = GetHistoryFilePath(pathToGitLog);
@@ -139,7 +150,15 @@ namespace CommitContentCreater
             // Нормирование номеров версий ПО
             for (int i = 1; i < historyModels.Count;)
             {
-                if (historyModels[i].Version.Compare(historyModels[i - 1].Version) >= 0)
+                int compareVersionsResult = historyModels[i].Version.Compare(historyModels[i - 1].Version);
+
+                if (compareVersionsResult == 0)
+                {
+                    historyModels[i - 1].IsNewVersion = false;
+
+                    i++;
+                }
+                else if (historyModels[i].Version.Compare(historyModels[i - 1].Version) > 0)
                 {
                     historyModels[i].StringDate = historyModels[i - 1].StringDate;
                     foreach (var currentCommitLine in historyModels[i - 1].Lines)

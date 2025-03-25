@@ -32,7 +32,7 @@ namespace CommitContentCreater
             else
             {
                 resultList.Add("");
-                resultList.Add($"~~~ {model.Auther} [{model.GetDate()}] ~~~");
+                resultList.Add($"~~~ [{model.GetDate()}] ~~~");
                 resultList.Add("");
                 foreach (var line in model.Lines)
                 {
