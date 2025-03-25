@@ -17,7 +17,7 @@ namespace CommitContentCreater
             if (model.IsNewVersion)
             {
                 resultList.Add(model.Version.ToString());
-                resultList.Add($"~~~ {model.Auther} [{model.GetDate()}] ~~~");
+                resultList.Add($"~~~ [{model.GetDate()}] ~~~");
                 resultList.Add("");
 
                 foreach (var line in model.Lines)

@@ -14,7 +14,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.3.0";
+        string applicationVersion = "v1.3.1";
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
@@ -29,6 +29,7 @@ internal class Program
         bool fromGitCommitFileExtractionCommand = false;
         bool filePathReading = false;
         bool showFoundFiles = false;
+        bool generateXMLHistoryFile = false;
 
         Console.WriteLine($"CommitContentCreater {applicationVersion}");
         Console.WriteLine("==========================================");
@@ -70,10 +71,17 @@ internal class Program
                     }
                     else if (args[i] == "-g")
                     {
+                        fromGitCommitFileExtractionCommand = true;
                         fromGitCommitFileExtraction = true;
                         extentionReading = false;
                         filePathReading = false;
-                        fromGitCommitFileExtractionCommand = true;
+                    }
+                    else if (args[i] == "-ge")
+                    {
+                        generateXMLHistoryFile = true;
+                        fromGitCommitFileExtraction = false;
+                        extentionReading = false;
+                        filePathReading = false;
                     }
                     else if (args[i] == "-f")
                     {
@@ -120,7 +128,7 @@ internal class Program
                     }
                     else
                     {
-                        Console.WriteLine("! Ошибка чтения аргумента !");
+                        LoggingHandler.LogError("Ошибка чтения аргумента");
                         Console.WriteLine("Посмотреть формат аргуменов утилиты можно с помощью параметра -h.");
                     }
                 }
@@ -171,7 +179,11 @@ internal class Program
             }
         }
 
-        if (fromGitCommitFileExtractionCommand)
+        if (generateXMLHistoryFile)
+        {
+
+        }
+        else if (fromGitCommitFileExtractionCommand)
         {
             CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
         }
@@ -183,7 +195,11 @@ internal class Program
             Console.WriteLine(currentVersion.ToString());
         }
 
-        if (helpShow || findVersion || fromGitCommitFileExtractionCommand)
+        if (helpShow || 
+            findVersion || 
+            fromGitCommitFileExtractionCommand ||
+            generateXMLHistoryFile
+            )
         {
             return;
         }
@@ -217,7 +233,7 @@ internal class Program
         }
         catch
         {
-            Console.WriteLine("! Ошибка доступа к директории проекта !");
+            LoggingHandler.LogError("Ошибка доступа к директории проекта");
         }
 
         // Модификация версии
@@ -236,7 +252,7 @@ internal class Program
         }
         else
         {
-            Console.WriteLine("! Не было найдено ни одной строки коммита !");
+            LoggingHandler.LogError("Не было найдено ни одной строки коммита");
         }
     }
 }

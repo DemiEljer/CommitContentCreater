@@ -1,3 +1,4 @@
+using CommitContentCreater.Handlers;
 using CommitContentCreater.Models;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace CommitContentCreater
             List<string> lines = OrdinaryFileHandler.ReadFileContent(pathToGitLog
                 , (exception) =>
                 {
-                    Console.WriteLine($"! Ошибка чтения файла GitLog по пути: {pathToGitLog} !");
+                    LoggingHandler.LogError("Ошибка чтения файла GitLog по пути: {pathToGitLog}");
                 });
 
             if (File.Exists(pathToGitLog))
@@ -111,7 +112,10 @@ namespace CommitContentCreater
                 }
                 else if (_line.StartsWith("Date:"))
                 {
-                    currentCommit.StringDate = _line.Replace("Author:", "").Split('<')[0].Trim();
+                    currentCommit.StringDate = DateParser.GetNormalizedDate(_line.Replace("Date:", "").Trim(), (message) =>
+                    {
+                        LoggingHandler.LogError(message);
+                    });
                 }
                 else if (_line.StartsWith("v") || _line.StartsWith("V"))
                 {

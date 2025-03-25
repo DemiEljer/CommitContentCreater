@@ -1,3 +1,4 @@
+using CommitContentCreater.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ namespace CommitContentCreater
             }
             catch
             {
-                Console.WriteLine("! Ошибка запуска утилиты обновления !");
+                LoggingHandler.LogError("Ошибка запуска утилиты обновления");
             }
 
             return;
