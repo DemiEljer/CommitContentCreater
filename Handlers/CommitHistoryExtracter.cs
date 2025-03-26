@@ -153,8 +153,6 @@ namespace CommitContentCreater
         {
             var revisionSetter = (int index) =>
             {
-                LoggingHandler.LogTest(historyModels[index - 1].Version.ToString());
-
                 // Обратный проход для определения ревизий
                 for (int j = index - 1; j >= 1; j--)
                 {
