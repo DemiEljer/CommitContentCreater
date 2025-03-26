@@ -8,7 +8,7 @@ namespace CommitContentCreater
 {
     public static class VersionsHandler
     {
-        private static char[] _PossibleSymboles { get; } = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' };
+        private static char[] _PossibleSymboles { get; } = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', 'r' };
 
         public static VersionModel? ParseFromString(string? value)
         {
@@ -47,7 +47,18 @@ namespace CommitContentCreater
 
                     try
                     {
-                        result.LowNumber = int.Parse(elements[2]);
+                        if (elements[2].Contains(""))
+                        {
+                            var versionAndRevision = elements[2].Split("r").ToArray();
+
+                            result.LowNumber = int.Parse(versionAndRevision[0]);
+                            result.Revision = int.Parse(versionAndRevision[1]);
+                        }
+                        else
+                        {
+                            result.LowNumber = int.Parse(elements[2]);
+                        }
+
                     }
                     catch
                     {

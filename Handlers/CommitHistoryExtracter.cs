@@ -82,7 +82,7 @@ namespace CommitContentCreater
 
                 if (_line.StartsWith("Merge"))
                 {
-                    // Ничего не делаем
+                    // Ничего не делаем 
                 }
                 else if (_line.StartsWith("commit"))
                 {
@@ -139,6 +139,10 @@ namespace CommitContentCreater
                     currentCommit.AppendLine(CommitLineHandler.CreateCommitLine(_HandleGitLogCommitLine(line)));
                 }
             }
+            if (currentCommit != null)
+            {
+                commits.Add(currentCommit);
+            }
 
             _NormilizeHistoryCommits(commits);
 
@@ -147,6 +151,22 @@ namespace CommitContentCreater
 
         private static void _NormilizeHistoryCommits(List<CommitModel> historyModels)
         {
+            var revisionSetter = (int index) =>
+            {
+                LoggingHandler.LogTest(historyModels[index - 1].Version.ToString());
+
+                // Обратный проход для определения ревизий
+                for (int j = index - 1; j >= 1; j--)
+                {
+                    if (historyModels[j - 1].IsNewVersion)
+                    {
+                        break;
+                    }
+
+                    historyModels[j - 1].Version.Revision = historyModels[j].Version.Revision + 1;
+                }
+            };
+
             // Нормирование номеров версий ПО
             for (int i = 1; i < historyModels.Count;)
             {
@@ -158,7 +178,7 @@ namespace CommitContentCreater
 
                     i++;
                 }
-                else if (historyModels[i].Version.Compare(historyModels[i - 1].Version) > 0)
+                else if (compareVersionsResult > 0)
                 {
                     historyModels[i].StringDate = historyModels[i - 1].StringDate;
                     foreach (var currentCommitLine in historyModels[i - 1].Lines)
@@ -167,14 +187,19 @@ namespace CommitContentCreater
                     }
 
                     historyModels.RemoveAt(i - 1);
+
+                    i--;
                 }
                 else
                 {
+                    revisionSetter(i);
+
                     i++;
                 }
             }
-        }
 
+            revisionSetter(historyModels.Count);
+        }
 
         private static string _HandleGitLogCommitLine(string line)
         {

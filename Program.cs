@@ -188,7 +188,7 @@ internal class Program
             CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
         }
 
-        CommitContentCreater.VersionModel currentVersion = CommitFileHander.FindVersionInHistoryFile(projectDirrectory);
+        CommitContentCreater.VersionModel currentVersion = CommitFileHandler.FindVersionInHistoryFile(projectDirrectory);
 
         if (findVersion)
         {
@@ -221,7 +221,7 @@ internal class Program
                 if (filePathes.Find(e => filePath.EndsWith(e)) != null 
                     || fileExtentions.Contains(extention))
                 {
-                    CommitFileHander.FindCommitLines(commitModel, filePath, cleanFilesFlag);
+                    CommitFileHandler.FindCommitLines(commitModel, filePath, cleanFilesFlag);
 
                     foundFilesCount++;
                     if (showFoundFiles)
@@ -245,8 +245,8 @@ internal class Program
 
         if (commitModel.Lines.Length != 0)
         {
-            CommitFileHander.GenerateCommitFile(projectDirrectory, commitModel);
-            CommitFileHander.AppendHistoryFile(projectDirrectory, commitModel);
+            CommitFileHandler.GenerateCommitFile(projectDirrectory, commitModel);
+            CommitFileHandler.AppendHistoryFile(projectDirrectory, commitModel);
 
             Console.WriteLine($"Было обнаружено и обработано файлов: {foundFilesCount}.");
         }

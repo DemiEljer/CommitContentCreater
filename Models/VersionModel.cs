@@ -19,6 +19,8 @@ namespace CommitContentCreater
             && MiddleNumber == 0
             && LowNumber == 0;
 
+        public int Revision { get; set; } = 1;
+
         public static VersionModel operator +(VersionModel origin, VersionModel adding)
         {
             if (adding.HighNumber > 0)
@@ -26,6 +28,7 @@ namespace CommitContentCreater
                 origin.HighNumber += adding.HighNumber;
                 origin.MiddleNumber = 0;
                 origin.LowNumber = 0;
+                origin.Revision = 1;
             }
             else if (adding.MiddleNumber > 0)
             {
@@ -35,6 +38,10 @@ namespace CommitContentCreater
             else if (adding.LowNumber > 0)
             {
                 origin.LowNumber += adding.LowNumber;
+            }
+            else
+            {
+                origin.Revision++;
             }
 
             return origin;
@@ -59,7 +66,7 @@ namespace CommitContentCreater
 
         public override string ToString()
         {
-            return $"v {HighNumber}.{MiddleNumber}.{LowNumber}";
+            return $"v {HighNumber}.{MiddleNumber}.{LowNumber}r{Revision}";
         }
 
         public VersionModel Clone()
@@ -68,7 +75,8 @@ namespace CommitContentCreater
             {
                 HighNumber = HighNumber,
                 MiddleNumber = MiddleNumber,
-                LowNumber = LowNumber
+                LowNumber = LowNumber,
+                Revision = Revision
             };
         }
     }

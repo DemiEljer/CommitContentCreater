@@ -8,7 +8,7 @@ using CommitContentCreater.Models;
 
 namespace CommitContentCreater
 {
-    public class CommitFileHander
+    public class CommitFileHandler
     {
         public static void FindCommitLines(CommitModel commitModel, string pathToFile, bool cleanFilesFlag)
         {

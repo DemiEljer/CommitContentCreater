@@ -32,6 +32,7 @@ namespace CommitContentCreater
             else
             {
                 resultList.Add("");
+                resultList.Add(model.Version.ToString());
                 resultList.Add($"~~~ [{model.GetDate()}] ~~~");
                 resultList.Add("");
                 foreach (var line in model.Lines)
