@@ -31,9 +31,6 @@ internal class Program
         bool showFoundFiles = false;
         bool generateXMLHistoryFile = false;
 
-        Console.WriteLine($"CommitContentCreater {applicationVersion}");
-        Console.WriteLine("==========================================");
-
         var ArgsHandlingDelegate = (string[] args) =>
         {
             for (int i = 0; i < args.Length; i++)
@@ -76,7 +73,7 @@ internal class Program
                         extentionReading = false;
                         filePathReading = false;
                     }
-                    else if (args[i] == "-ge")
+                    else if (args[i] == "-gx")
                     {
                         generateXMLHistoryFile = true;
                         fromGitCommitFileExtraction = false;
@@ -171,6 +168,18 @@ internal class Program
             filePathes = filePathes.Select(p => pathNormalizer(p)).ToList();
         }
 
+        CommitContentCreater.VersionModel currentVersion = CommitFileHandler.FindVersionInHistoryFile(projectDirrectory);
+
+        if (findVersion)
+        {
+            Console.WriteLine(currentVersion.ToString());
+
+            return;
+        }
+
+        Console.WriteLine($"CommitContentCreater {applicationVersion}");
+        Console.WriteLine("==========================================");
+
         if (helpShow)
         {
             using (StreamReader sr = new StreamReader(new MemoryStream(Resources.help)))
@@ -181,18 +190,11 @@ internal class Program
 
         if (generateXMLHistoryFile)
         {
-
+            XMLHistoryFileHandler.GenerateHistoryFile(projectDirrectory);
         }
         else if (fromGitCommitFileExtractionCommand)
         {
             CommitHistoryExtracter.HistoryFileExtraction(gitHistoryExtractionPath);
-        }
-
-        CommitContentCreater.VersionModel currentVersion = CommitFileHandler.FindVersionInHistoryFile(projectDirrectory);
-
-        if (findVersion)
-        {
-            Console.WriteLine(currentVersion.ToString());
         }
 
         if (helpShow || 
