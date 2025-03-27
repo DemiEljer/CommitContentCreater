@@ -153,6 +153,8 @@ namespace CommitContentCreater
         {
             var revisionSetter = (int index) =>
             {
+                historyModels[index - 1].Version.Revision = 1;
+
                 // Обратный проход для определения ревизий
                 for (int j = index - 1; j >= 1; j--)
                 {
