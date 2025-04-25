@@ -146,8 +146,6 @@ internal class Program
                     {
                         Console.WriteLine(message);
                     });
-
-                    //Console.WriteLine(string.Join(",", args));
                 }
             }
             catch

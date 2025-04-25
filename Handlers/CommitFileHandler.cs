@@ -83,7 +83,7 @@ namespace CommitContentCreater
 
             });
 
-            return resultVersion == null ? new VersionModel() : resultVersion;
+            return resultVersion == null ? new VersionModel() { Revision = 0 } : resultVersion;
         }
 
         public static void AppendHistoryFile(string path, CommitModel model)
