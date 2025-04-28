@@ -16,7 +16,7 @@ namespace CommitContentCreater
             List<string> lines = OrdinaryFileHandler.ReadFileContent(pathToGitLog
                 , (exception) =>
                 {
-                    LoggingHandler.LogError("Ошибка чтения файла GitLog по пути: {pathToGitLog}");
+                    LoggingHandler.LogError($"Ошибка чтения файла GitLog по пути: {pathToGitLog}");
                 });
 
             if (File.Exists(pathToGitLog))
@@ -168,7 +168,7 @@ namespace CommitContentCreater
             };
 
             // Нормирование номеров версий ПО
-            for (int i = 1; i < historyModels.Count;)
+            for (int i = 1; i < historyModels.Count && historyModels.Count > 1;)
             {
                 int compareVersionsResult = historyModels[i].Version.Compare(historyModels[i - 1].Version);
 

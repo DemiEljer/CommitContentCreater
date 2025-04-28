@@ -14,7 +14,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string applicationVersion = "v1.3.1";
+        string applicationVersion = "v1.3.1r10";
 
         bool cleanFilesFlag = false;
         string projectDirrectory = "";
@@ -150,7 +150,11 @@ internal class Program
             }
             catch
             {
+                Console.WriteLine($"CommitContentCreater {applicationVersion}");
+                Console.WriteLine("==========================================");
                 Console.WriteLine("Файл конфигурации (commit.gen) не был найден или произошла ошибка чтения.");
+
+                return;
             }
         }
 
