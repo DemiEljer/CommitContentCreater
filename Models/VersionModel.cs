@@ -34,10 +34,12 @@ namespace CommitContentCreater
             {
                 origin.MiddleNumber += adding.MiddleNumber;
                 origin.LowNumber = 0;
+                origin.Revision = 1;
             }
             else if (adding.LowNumber > 0)
             {
                 origin.LowNumber += adding.LowNumber;
+                origin.Revision = 1;
             }
             else
             {
